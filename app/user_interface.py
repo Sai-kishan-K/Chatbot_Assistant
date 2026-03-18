@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
-from app.utils.files import get_latest_summary
+from utils.files import get_latest_summary
 
 # --- CONFIGURATION ---
 st.set_page_config(page_title="DocuMind AI", page_icon="🤖")
