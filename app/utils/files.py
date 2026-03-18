@@ -68,14 +68,19 @@ def copy_to(src: str, dst_dir: str, dst_name: str) -> str:
     shutil.copy2(src, dst_path)
     return dst_path
 
-def get_latest_summary(base_dir="outputs"):
-    # Find all 'final_summary.md' files within any subdirectory of base_dir
-    search_path = os.path.join(base_dir, "**/final_summary.md")
-    files = glob.glob(search_path, recursive=True)
-    
+def get_latest_summary(base_dirs: list[str] | tuple[str, ...] | None = None) -> Optional[str]:
+    if base_dirs is None:
+        base_dirs = ("outputs", "data")
+
+    files: list[str] = []
+
+    for base_dir in base_dirs:
+        search_path = os.path.join(base_dir, "**", "final_summary.md")
+        files.extend(glob.glob(search_path, recursive=True))
+
     if not files:
         return None
-        
-    # Sort files by creation time to get the absolute newest one
-    latest_file = max(files, key=os.path.getctime)
+
+    # Use modification time so checked-in files work consistently across environments.
+    latest_file = max(files, key=os.path.getmtime)
     return latest_file

@@ -14,21 +14,46 @@ model = genai.GenerativeModel('models/gemini-2.5-flash')
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+knowledge_base = None
+knowledge_source = None
+
 # --- SIDEBAR: Load the Knowledge ---
 with st.sidebar:
     st.title("Settings")
+    uploaded_summary = st.file_uploader(
+        "Upload summary file",
+        type=["md", "txt"],
+        help="Use a generated summary file if the app cannot find one locally.",
+    )
     latest_file = get_latest_summary()
-    if latest_file:
+
+    if uploaded_summary is not None:
+        knowledge_base = uploaded_summary.getvalue().decode("utf-8")
+        knowledge_source = uploaded_summary.name
+        st.success(f"Using uploaded file: {uploaded_summary.name}")
+    elif latest_file:
         st.success(f"Connected to: {os.path.basename(latest_file)}")
-        with open(latest_file, "r") as f:
+        knowledge_source = latest_file
+        with open(latest_file, "r", encoding="utf-8") as f:
             knowledge_base = f.read()
     else:
-        st.error("No documentation found. Run the scraper first!")
-        st.stop()
+        st.warning("No summary file detected.")
+        st.markdown(
+            "Add `data/final_summary.md`, commit an `outputs/.../final_summary.md`, "
+            "or upload a `.md`/`.txt` summary here."
+        )
 
 # --- MAIN CHAT INTERFACE ---
 st.title("💬 CraftAI Chatbot")
-st.caption("I'm an AI ")
+st.caption("Ask questions about your processed documentation.")
+
+if knowledge_source:
+    st.caption(f"Knowledge source: `{os.path.basename(knowledge_source)}`")
+else:
+    st.info(
+        "Documentation is not loaded yet. Upload a generated summary in the sidebar "
+        "or commit `data/final_summary.md` to the repository for Streamlit deployment."
+    )
 
 # Display chat history from session state
 for message in st.session_state.messages:
@@ -36,7 +61,12 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # --- CHAT LOGIC ---
-if prompt := st.chat_input("Ask me about the documentation..."):
+prompt = st.chat_input(
+    "Ask me about the documentation...",
+    disabled=knowledge_base is None,
+)
+
+if prompt and knowledge_base:
     # 1. Display user message
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
