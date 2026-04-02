@@ -2,6 +2,9 @@
 
 MVP: OCR -> Text Cleaning -> LLM Analysis -> Structured JSON Output
 
+Project overview documentation lives in [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md).
+Technical documentation for the current codebase lives in [`docs/TECHNICAL_DOCUMENTATION.md`](docs/TECHNICAL_DOCUMENTATION.md).
+
 ## Streamlit App
 
 Run locally:

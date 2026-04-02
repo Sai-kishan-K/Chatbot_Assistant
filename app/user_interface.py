@@ -4,6 +4,17 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from utils.files import get_latest_summary
 
+CHAT_INSTRUCTIONS = """
+You are a helpful assistant for processed documentation.
+
+INSTRUCTIONS:
+1. The user may write in English or French. Always understand both languages.
+2. Reply in the same language as the user's message unless they explicitly request another language.
+3. Base your answer on the provided documentation whenever possible.
+4. If the answer is not in the documentation, provide a generally helpful answer and clearly say it was not found in the documentation.
+5. Do not pretend the documentation contains facts that are not supported by the provided text.
+""".strip()
+
 # --- CONFIGURATION ---
 st.set_page_config(page_title="DocuMind AI", page_icon="🤖")
 load_dotenv()
@@ -45,7 +56,7 @@ with st.sidebar:
 
 # --- MAIN CHAT INTERFACE ---
 st.title("💬 CraftAI Chatbot")
-st.caption("Ask questions about your processed documentation.")
+st.caption("Ask questions in English or French about your processed documentation.")
 
 if knowledge_source:
     st.caption(f"Knowledge source: `{os.path.basename(knowledge_source)}`")
@@ -62,7 +73,7 @@ for message in st.session_state.messages:
 
 # --- CHAT LOGIC ---
 prompt = st.chat_input(
-    "Ask me about the documentation...",
+    "Ask me about the documentation... / Pose-moi une question sur la documentation...",
     disabled=knowledge_base is None,
 )
 
@@ -77,8 +88,12 @@ if prompt and knowledge_base:
         message_placeholder = st.empty()
         full_response = ""
         
-        # We inject the knowledge base into the system prompt context
-        full_prompt = f"Using this doc: {knowledge_base}\n\nUser Question: {prompt}"
+        # We inject the knowledge base and response rules into the prompt context.
+        full_prompt = (
+            f"{CHAT_INSTRUCTIONS}\n\n"
+            f"DOCUMENTATION:\n{knowledge_base}\n\n"
+            f"USER QUESTION:\n{prompt}"
+        )
         
         try:
             # Note: 2026 Streamlit supports streaming natively for a 'typewriter' effect

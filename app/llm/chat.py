@@ -3,6 +3,19 @@ from app.utils.files import get_latest_summary
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+
+CHAT_INSTRUCTIONS = """
+You are a helpful assistant. I have provided a DOCUMENTATION section below.
+
+INSTRUCTIONS:
+1. Answer the user's question using the DOCUMENTATION whenever possible.
+2. The user may write in English or French. Always understand both languages.
+3. Reply in the same language as the user's question unless they explicitly ask for another language.
+4. If the answer is not in the documentation, provide a generally helpful answer and clearly say that it was not found in the documentation.
+5. Do not claim the documentation says something unless it is actually supported by the provided text.
+""".strip()
+
+
 def start_chat():
     load_dotenv()
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -23,28 +36,20 @@ def start_chat():
     chat = model.start_chat(history=[])
     
     print("\n--- Documentation Chatbot Active ---")
-    print("Type 'exit' to quit.")
+    print("Type 'exit', 'quit', 'quitter', or 'sortir' to quit.")
 
     while True:
         user_query = input("\nYou: ")
-        if user_query.lower() in ["exit", "quit"]:
+        if user_query.strip().lower() in ["exit", "quit", "quitter", "sortir"]:
             break
 
         # We "inject" the knowledge into every prompt context
-
-        # Use the following documentation to answer the user's question accurately.
-        # If the answer isn't in the documentation, say you don't know.
         prompt = f"""
-        You are a helpful assistant. I have provided a 'DOCUMENTATION' below.
-        
-        INSTRUCTIONS:
-        1. Answer the question using the KNOWLEDGE BASE.
-        2. If the answer is not there, try to provide a general helpful answer based on your training but DISCLOSE that it's not in the documentation.
-        3. Do NOT just say 'I don't know' if you can find ANY related keywords
+        {CHAT_INSTRUCTIONS}
 
         DOCUMENTATION:
         {knowledge_base}
-        
+
         QUESTION:
         {user_query}
         """
