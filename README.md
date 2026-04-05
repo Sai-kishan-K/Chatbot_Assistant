@@ -19,6 +19,8 @@ The app can load documentation from either:
 - the latest local `outputs/**/final_summary.md` file
 - an uploaded `.md` or `.txt` summary file in the sidebar
 
+The chat UI supports both typed questions and voice questions recorded from your microphone. Voice queries are transcribed and then answered against the same loaded documentation.
+
 ## Push To GitHub
 
 1. Create a new GitHub repository.
